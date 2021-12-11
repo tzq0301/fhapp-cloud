@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.scu.mapper.ProjectMapper">
+
+    <resultMap id="personalProjectDetail" type="PersonalProjectDetail">
+        <result column="apply_id" property="applyId"/>
+        <result column="type" property="type"/>
+        <result column="person_name" property="personName"/>
+        <result column="license_num" property="licenseNum"/>
+        <result column="phone_num" property="phoneNum"/>
+        <result column="email" property="email"/>
+        <result column="address" property="address"/>
+        <result column="company_type" property="companyType"/>
+        <result column="company_address" property="companyAddress"/>
+        <result column="company_name" property="companyName"/>
+        <result column="work_title" property="workTitle"/>
+        <result column="work_network_link" property="workNetworkLink"/>
+        <result column="work_introduction" property="workIntroduction"/>
+        <result column="work_file_address" property="workFileAddress"/>
+        <result column="id_card_pic_front_address" property="idCardPicFrontAddress"/>
+        <result column="id_card_pic_end_address" property="idCardPicEndAddress"/>
+    </resultMap>
+
+    <resultMap id="teamProjectDetail" type="TeamProjectDetail">
+        <result column="apply_id" property="applyId"/>
+        <result column="type" property="type"/>
+        <result column="person_name" property="personName"/>
+        <result column="license_num" property="licenseNum"/>
+        <result column="phone_num" property="phoneNum"/>
+        <result column="email" property="email"/>
+        <result column="address" property="address"/>
+
+        <result column="team_name" property="teamName"/>
+        <result column="team_type" property="teamType"/>
+        <result column="team_address" property="teamAddress"/>
+        <result column="team_phone" property="teamPhone"/>
+
+        <result column="work_title" property="workTitle"/>
+        <result column="work_network_link" property="workNetworkLink"/>
+        <result column="work_introduction" property="workIntroduction"/>
+        <result column="work_file_address" property="workFileAddress"/>
+
+        <result column="stamp_file_address" property="stampFileAddress"/>
+    </resultMap>
+
+    <select id="getAllProjectsByUsername" parameterType="String" resultType="ProjectBriefInfo">
+        SELECT a.isSubmitted AS isSubmitted,
+               a.apply_id    AS projectId,
+               p.work_title  AS projectName,
+               p.type        AS projectType,
+               a.isPersonal  AS isPersonal
+        FROM users_apply AS u
+                 JOIN apply_id_tbl AS a ON u.apply_id = a.apply_id
+                 JOIN personal_apply AS p ON u.apply_id = p.apply_id
+        WHERE a.isDeleted = '0' AND username = #{username}
+        UNION
+        SELECT a.isSubmitted AS isSubmitted,
+               a.apply_id    AS projectId,
+               p.work_title  AS projectName,
+               p.type        AS projectType,
+               a.isPersonal  AS isPersonal
+        FROM users_apply AS u
+                 JOIN apply_id_tbl AS a ON u.apply_id = a.apply_id
+                 JOIN team_apply AS p ON u.apply_id = p.apply_id
+        WHERE a.isDeleted = '0' AND username = #{username}
+    </select>
+
+    <update id="deleteApply" parameterType="String" flushCache="true">
+        UPDATE apply_id_tbl
+        SET isDeleted = 1
+        WHERE apply_id = #{projectId}
+    </update>
+
+    <update id="changeProjectSubmittedState" parameterType="String" flushCache="true">
+        UPDATE apply_id_tbl
+        SET apply_id_tbl.isSubmitted = 1 - apply_id_tbl.isSubmitted
+        WHERE apply_id = #{projectId}
+    </update>
+
+    <select id="getPersonalProjectDetail" parameterType="String" resultMap="personalProjectDetail">
+        SELECT apply_id,
+               type,
+               person_name,
+               license_num,
+               phone_num,
+               email,
+               address,
+               company_type,
+               company_address,
+               company_name,
+               work_title,
+               work_network_link,
+               work_introduction,
+               work_file_address,
+               id_card_pic_front_address,
+               id_card_pic_end_address
+        FROM personal_apply
+        WHERE apply_id = #{projectId}
+    </select>
+
+    <select id="getTeamProjectDetail" parameterType="String" resultMap="teamProjectDetail">
+        SELECT apply_id,
+               type,
+               person_name,
+               license_num,
+               phone_num,
+               email,
+               address,
+               team_name,
+               team_type,
+               team_address,
+               team_phone,
+               work_title,
+               work_network_link,
+               work_introduction,
+               work_file_address,
+               stamp_file_address
+        FROM team_apply
+        WHERE apply_id = #{projectId}
+    </select>
+
+    <insert id="savePersonalApply" flushCache="true">
+        INSERT INTO personal_apply(apply_id,
+                                   type, person_name,
+                                   license_num,
+                                   phone_num,
+                                   email,
+                                   address,
+                                   company_type,
+                                   company_address,
+                                   company_name,
+                                   work_title,
+                                   work_network_link,
+                                   work_introduction,
+                                   work_file_address,
+                                   id_card_pic_front_address,
+                                   id_card_pic_end_address)
+        VALUES (#{detail.applyId},
+                #{detail.type},
+                #{detail.personName},
+                #{detail.licenseNum},
+                #{detail.phoneNum},
+                #{detail.email},
+                #{detail.address},
+                #{detail.companyType},
+                #{detail.companyAddress},
+                #{detail.companyName},
+                #{detail.workTitle},
+                #{detail.workNetworkLink},
+                #{detail.workIntroduction},
+                #{detail.workFileAddress},
+                #{detail.idCardPicFrontAddress},
+                #{detail.idCardPicEndAddress})
+    </insert>
+
+    <insert id="saveTeamApply" flushCache="true">
+        INSERT INTO team_apply(apply_id,
+                               type,
+                               person_name,
+                               license_num,
+                               phone_num,
+                               email,
+                               address,
+                               team_name,
+                               team_type,
+                               team_address,
+                               team_phone,
+                               work_title,
+                               work_network_link,
+                               work_introduction,
+                               work_file_address,
+                               stamp_file_address)
+        VALUES (#{detail.applyId},
+                #{detail.type},
+                #{detail.personName},
+                #{detail.licenseNum},
+                #{detail.phoneNum},
+                #{detail.email},
+                #{detail.address},
+                #{detail.teamName},
+                #{detail.teamType},
+                #{detail.teamAddress},
+                #{detail.teamPhone},
+                #{detail.workTitle},
+                #{detail.workNetworkLink},
+                #{detail.workIntroduction},
+                #{detail.workFileAddress},
+                #{detail.stampFileAddress})
+    </insert>
+
+    <insert id="saveApplyIdTbl" flushCache="true">
+        INSERT INTO apply_id_tbl(apply_id, isPersonal, isSubmitted, isDeleted)
+        VALUES (#{applyId}, 1, 0, 0)
+    </insert>
+
+    <insert id="saveApplyIdTblTeam" flushCache="true">
+        INSERT INTO apply_id_tbl(apply_id, isPersonal, isSubmitted, isDeleted)
+        VALUES (#{applyId}, 0, 0, 0)
+    </insert>
+
+    <insert id="saveUsersApply" flushCache="true">
+        INSERT INTO users_apply(username, apply_id)
+        VALUES (#{username}, #{applyId})
+    </insert>
+
+    <update id="updatePersonalProjectDetail" flushCache="true">
+        UPDATE personal_apply
+        <set>
+            <if test="detail.type != null and detail.type != ''">type = #{detail.type},</if>
+            <if test="detail.personName != null and detail.personName != ''">person_name = #{detail.personName},</if>
+            <if test="detail.licenseNum != null and detail.licenseNum != ''">license_num = #{detail.licenseNum},</if>
+            <if test="detail.phoneNum != null and detail.phoneNum != ''">phone_num = #{detail.phoneNum},</if>
+            <if test="detail.email != null and detail.email != ''">email = #{detail.email},</if>
+            <if test="detail.address != null and detail.address != ''">address = #{detail.address},</if>
+            <if test="detail.companyType != null and detail.companyType != ''">company_type = #{detail.companyType},
+            </if>
+            <if test="detail.companyAddress != null and detail.companyAddress != ''">company_address =
+                #{detail.companyAddress},
+            </if>
+            <if test="detail.companyName != null and detail.companyName != ''">company_name = #{detail.companyName},
+            </if>
+            <if test="detail.workTitle != null and detail.workTitle != ''">work_title = #{detail.workTitle},</if>
+            <if test="detail.workNetworkLink != null and detail.workNetworkLink != ''">work_network_link =
+                #{detail.workNetworkLink},
+            </if>
+            <if test="detail.workIntroduction != null and detail.workIntroduction != ''">work_introduction =
+                #{detail.workIntroduction},
+            </if>
+            <if test="detail.workFileAddress != null and detail.workFileAddress != ''">work_file_address =
+                #{detail.workFileAddress},
+            </if>
+            <if test="detail.idCardPicFrontAddress != null and detail.idCardPicFrontAddress != ''">
+                id_card_pic_front_address = #{detail.idCardPicFrontAddress},
+            </if>
+            <if test="detail.idCardPicEndAddress != null and detail.idCardPicEndAddress != ''">id_card_pic_end_address =
+                #{detail.idCardPicEndAddress}
+            </if>
+        </set>
+        WHERE apply_id = #{applyId}
+    </update>
+
+    <update id="updateTeamProjectDetail" flushCache="true">
+        UPDATE team_apply
+        <set>
+            <if test="detail.type != null and detail.type != ''">type = #{detail.type},</if>
+            <if test="detail.personName != null and detail.personName != ''">person_name = #{detail.personName},</if>
+            <if test="detail.licenseNum != null and detail.licenseNum != ''">license_num = #{detail.licenseNum},</if>
+            <if test="detail.phoneNum != null and detail.phoneNum != ''">phone_num = #{detail.phoneNum},</if>
+            <if test="detail.email != null and detail.email != ''">email = #{detail.email},</if>
+            <if test="detail.address != null and detail.address != ''">address = #{detail.address},</if>
+
+            <if test="detail.teamName != null and detail.teamName != ''">team_name = #{detail.teamName},</if>
+            <if test="detail.teamType != null and detail.teamType != ''">team_type = #{detail.teamType},</if>
+            <if test="detail.teamAddress != null and detail.teamAddress != ''">team_address = #{detail.teamAddress},
+            </if>
+            <if test="detail.teamPhone != null and detail.teamPhone != ''">team_phone = #{detail.teamPhone},</if>
+
+            <if test="detail.workTitle != null and detail.workTitle != ''">work_title = #{detail.workTitle},</if>
+            <if test="detail.workNetworkLink != null and detail.workNetworkLink != ''">work_network_link =
+                #{detail.workNetworkLink},
+            </if>
+            <if test="detail.workIntroduction != null and detail.workIntroduction != ''">work_introduction =
+                #{detail.workIntroduction},
+            </if>
+            <if test="detail.workFileAddress != null and detail.workFileAddress != ''">work_file_address =
+                #{detail.workFileAddress},
+            </if>
+            <if test="detail.stampFileAddress != null and detail.stampFileAddress != ''">stamp_file_address =
+                #{detail.stampFileAddress}
+            </if>
+        </set>
+        WHERE apply_id = #{applyId}
+    </update>
+
+</mapper>

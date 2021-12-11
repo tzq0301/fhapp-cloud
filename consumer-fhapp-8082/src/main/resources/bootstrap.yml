@@ -1,0 +1,16 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: consumer-fhapp-8082
+  profiles:
+    active: test
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:12300
+      config:
+        server-addr: 127.0.0.1:12300
+        file-extension: yaml
+        namespace: test

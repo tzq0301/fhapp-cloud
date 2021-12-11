@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.scu.mapper.UserMapper">
+
+    <insert id="saveUser" flushCache="true"
+            parameterType="UsersDO">
+        INSERT INTO `users`(username, password,
+                            secret_security_question,
+                            secret_security_answer, enabled)
+        VALUES (#{username}, #{password},
+                #{secretSecurityQuestion},
+                #{secretSecurityAnswer}, 1);
+    </insert>
+
+    <insert id="saveUserAuthorities" flushCache="true"
+            parameterType="AuthoritiesDO">
+        INSERT INTO `authorities`(username, authority)
+        VALUES
+        <foreach collection="authorities" item="authority"
+                 open="(" separator="), (" close=")">
+            #{username}, #{authority}
+        </foreach>
+    </insert>
+
+    <select id="getPassword" parameterType="java.lang.String"
+            resultType="java.lang.String" flushCache="true" useCache="false">
+        SELECT password
+        FROM users
+        WHERE username = #{username};
+    </select>
+
+    <select id="getSecretSecurityQuestion" parameterType="java.lang.String"
+            resultType="java.lang.String" flushCache="true" useCache="false">
+        SELECT secret_security_question
+        FROM users
+        WHERE username = #{username};
+    </select>
+
+    <select id="getSecretSecurityAnswer" parameterType="java.lang.String"
+            resultType="java.lang.String" flushCache="true" useCache="false">
+        SELECT secret_security_answer
+        FROM users
+        WHERE username = #{username};
+    </select>
+
+    <update id="updatePassword" flushCache="true" parameterType="java.lang.String">
+        UPDATE users
+        <set>
+            <if test="newPassword != null">
+                password = #{newPassword}
+            </if>
+        </set>
+        WHERE username = #{username};
+    </update>
+
+    <select id="getUserByUsername" parameterType="String" flushCache="true" resultType="UserBasicInfoDTO">
+        SELECT username                 AS username,
+               password                 AS password,
+               secret_security_question AS secretSecurityQuestion,
+               secret_security_answer   AS secretSecurityAnswer
+        FROM users
+                 JOIN authorities USING (username)
+        WHERE username = #{username}
+    </select>
+
+</mapper>
